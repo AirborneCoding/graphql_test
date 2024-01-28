@@ -7,7 +7,20 @@ const express = require('express');
 const http = require('http');
 const cors = require('cors');
 const typeDefs = require('./graphql/typeDefs');
-const resolvers = require('./graphQL/resolvers');
+// const resolvers = require('./graphQL/resolvers');
+
+const bookResolver = require("./graphql/resolvers/book.resolver")
+
+const resolvers = {
+    Query: {
+        ...bookResolver.Query,
+    },
+    Mutation: {
+        ...bookResolver.Mutation
+    },
+};
+
+
 const connectDB = require('./config/db/connectDB'); // Assuming this is the module for database connection
 
 const app = express();
