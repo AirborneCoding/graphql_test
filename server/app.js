@@ -15,7 +15,7 @@ async function startApp() {
     const apolloServer = createApolloServer();
     await apolloServer.start();
 
-    // app.use(cors());
+    app.use(cors());
     app.use(express.json())
 
     // graphql
