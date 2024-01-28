@@ -1,14 +1,9 @@
 // apolloConfig.js
 const { ApolloServer } = require("@apollo/server");
 const { StatusCodes } = require("http-status-codes");
-const http = require("http");
-const express = require("express");
-const { ApolloServerPluginDrainHttpServer } = require("@apollo/server/plugin/drainHttpServer")
+
 const typeDefs = require("../../graphql/typeDefs");
 const resolvers = require("../../graphQL/resolvers");
-
-const app = express();
-const httpServer = http.createServer(app);
 
 const formatError = (err) => {
     let customError = {
@@ -47,9 +42,8 @@ const createApolloServer = () => {
         resolvers,
         formatError,
         onHealthCheck,
-        plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
     });
 };
 
-module.exports = { createApolloServer, httpServer, app };
+module.exports = createApolloServer;
 

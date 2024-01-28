@@ -1,62 +1,43 @@
 require("dotenv").config()
 
-const express = require("express");
-const { expressMiddleware } = require("@apollo/server/express4")
-const createApolloServer = require("./config/apollo/apolloConfig");
+const { ApolloServer } = require('@apollo/server');
+const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
+const express = require('express');
+const http = require('http');
+const cors = require('cors');
+const typeDefs = require('./graphql/typeDefs');
+const resolvers = require('./graphQL/resolvers');
+const connectDB = require('./config/db/connectDB'); // Assuming this is the module for database connection
 
-const connectDB = require("./config/db/connectDB")
+const app = express();
+const httpServer = http.createServer(app);
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+});
 
-const cors = require("cors")
+async function startServer() {
+    try {
 
-// start App
-async function startApp() {
-    const app = express()
+        await connectDB(process.env.MONGO_URI);
+        await server.start();
 
-    const apolloServer = createApolloServer();
-    await apolloServer.start();
+        app.use(
+            '/graphql',
+            cors(),
+            express.json(),
+            expressMiddleware(server),
+        );
 
-    app.use(cors({
-        origin: ["http://localhost:5173/"]
-    }));
-    app.use(express.json())
-
-    // graphql
-    app.use(
-        "/graphql",
-        cors({
-            origin: ["http://localhost:5173/"]
-        }),
-        expressMiddleware(apolloServer, {
-            context: async ({ req, res }) => ({ req }),
-        })
-    )
-
-    const connectDatabase = async () => {
-        try {
-            await connectDB(process.env.MONGO_URI)
-            console.log("Connected to the database successfully");
-        } catch (error) {
-            console.error("Failed to connect to the database:", error);
-            process.exit(1);
-        }
-    };
-
-    // db then start
-    const PORT = process.env.PORT || 5000
-    const start = async () => {
-        try {
-            await connectDatabase()
-            app.listen(PORT, () => console.log(`Server is running at http://localhost:${PORT}`));
-        } catch (error) {
-            console.log("something went wrong", error);
-        }
+        const PORT = process.env.PORT || 5000;
+        httpServer.listen({ port: PORT }, () => {
+            console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+        });
+    } catch (error) {
+        console.log("Failed to connect to the database:", error);
     }
-
-    start()
-
 }
 
-startApp()
-
-
-
+startServer();
