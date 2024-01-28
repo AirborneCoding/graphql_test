@@ -15,7 +15,9 @@ async function startApp() {
     const apolloServer = createApolloServer();
     await apolloServer.start();
 
-    app.use(cors());
+    app.use(cors({
+        origin: ["http://localhost:5173/"]
+    }));
     app.use(express.json())
 
     // graphql
