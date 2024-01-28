@@ -23,7 +23,9 @@ async function startApp() {
     // graphql
     app.use(
         "/graphql",
-        cors(),
+        cors({
+            origin: ["http://localhost:5173/"]
+        }),
         expressMiddleware(apolloServer, {
             context: async ({ req, res }) => ({ req }),
         })
